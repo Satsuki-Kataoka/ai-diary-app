@@ -53,6 +53,35 @@ app.get('/api/diaries', (req, res) => {
     });
 });
 
+// API: 日記のまとめを生成
+app.get('/api/summary', async (req, res) => {
+    // 直近30件の日記を取得
+    db.all("SELECT emotion, content FROM diaries ORDER BY date DESC LIMIT 30", [], async (err, rows) => {
+        if (err) {
+            console.error(err.message);
+            return res.status(500).json({ error: 'データベースの読み込みに失敗しました。' });
+        }
+        if (rows.length === 0) {
+            return res.json({ summary: "まだ日記がありません。まとめを作るには、もっと日記を書きましょう！" });
+        }
+
+        // AIに渡すためのテキストを作成
+        const diaryTexts = rows.map(row => `気分:${row.emotion}, 内容:${row.content}`).join('\n---\n');
+        
+        try {
+            const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+            const prompt = `以下の複数の日記から、全体的な感情の傾向や特筆すべき出来事を分析し、ユーザーに寄り添う優しいカウンセラーのように、丁寧な口調で要約してください。\n\n${diaryTexts}`;
+
+            const result = await model.generateContent(prompt);
+            const summary = (await result.response).text();
+            res.json({ summary });
+        } catch (error) {
+            console.error("Summary generation failed:", error);
+            res.status(500).json({ error: "まとめの生成に失敗しました。" });
+        }
+    });
+});
+
 app.listen(port, () => {
     console.log(`サーバーが http://localhost:${port} で起動しました`);
 });

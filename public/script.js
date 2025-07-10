@@ -1,3 +1,28 @@
+// --- まとめ機能のコード ---
+const summaryButton = document.getElementById('summary-button');
+const summaryArea = document.getElementById('summary-area');
+const summaryText = document.getElementById('summary-text');
+
+summaryButton.addEventListener('click', async () => {
+    // ボタンを「作成中...」にして、連打できないようにする
+    summaryButton.textContent = '作成中...';
+    summaryButton.disabled = true;
+
+    // バックエンドにまとめを依頼する
+    const response = await fetch('/api/summary');
+    if (response.ok) {
+        const data = await response.json();
+        summaryText.textContent = data.summary;
+        summaryArea.style.display = 'block'; // 結果を表示エリアに表示
+    } else {
+        alert('まとめの作成に失敗しました。');
+    }
+
+    // ボタンを元に戻す
+    summaryButton.textContent = '日記のまとめを作成する';
+    summaryButton.disabled = false;
+});
+
 document.addEventListener('DOMContentLoaded', () => {
     const form = document.getElementById('diary-form');
     const aiCommentDiv = document.getElementById('ai-comment');

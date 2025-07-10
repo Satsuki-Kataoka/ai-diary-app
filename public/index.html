@@ -2,21 +2,153 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>AI日記</title>
-    <style>
-        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9; }
-        h1, h2 { color: #333; }
-        form { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-        textarea { width: 100%; height: 150px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; padding: 10px; }
-        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
-        button:hover { background-color: #0056b3; }
-        .comment { background-color: #e9f7ef; border-left: 4px solid #28a745; padding: 15px; margin-top: 20px; border-radius: 5px; }
-        #diary-list { list-style: none; padding: 0; }
-        #diary-list li { background-color: white; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
-    </style>
+    <title>AI-MY-DIARY</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
+<style>
+    /* --- 明るく親しみやすいデザイン --- */
+    :root {
+        --primary-color: #4a90e2; /* メインカラー（爽やかな青） */
+        --secondary-color: #f7f9fc; /* 背景色（ごく薄い青） */
+        --accent-color: #50e3c2; /* アクセントカラー（ミントグリーン） */
+        --font-color: #333;
+        --card-bg-color: #ffffff;
+        --shadow-color: rgba(0, 0, 0, 0.08);
+    }
+
+    body {
+        font-family: 'Noto Sans JP', sans-serif; /* ステップ1で導入したフォントを適用 */
+        background-color: var(--secondary-color);
+        color: var(--font-color);
+        max-width: 680px;
+        margin: 20px auto;
+        padding: 20px;
+        line-height: 1.6;
+    }
+
+    h1, h2 {
+        color: var(--primary-color);
+        text-align: center;
+        font-weight: 700;
+    }
+
+    h1 {
+        font-size: 2.5em;
+        margin-bottom: 30px;
+    }
+
+    h2 {
+        font-size: 1.8em;
+        border-bottom: 2px solid #e0e0e0;
+        padding-bottom: 10px;
+        margin-top: 40px;
+    }
+
+    form {
+        background-color: var(--card-bg-color);
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px var(--shadow-color);
+        margin-bottom: 40px;
+    }
+
+    label {
+        font-weight: 700;
+        margin-bottom: 8px;
+        display: inline-block;
+    }
+
+    textarea, select {
+        width: 100%;
+        padding: 12px;
+        box-sizing: border-box;
+        border: 1px solid #ccc;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 1em;
+        transition: border-color 0.3s, box-shadow 0.3s;
+    }
+
+    textarea:focus, select:focus {
+        outline: none;
+        border-color: var(--primary-color);
+        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
+    }
+
+    button {
+        background-color: var(--primary-color);
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 1.1em;
+        font-weight: 700;
+        display: block;
+        width: 100%;
+        margin-top: 20px;
+        transition: background-color 0.3s, transform 0.2s;
+    }
+
+    button:hover {
+        background-color: #357ABD;
+        transform: translateY(-2px); /* 少し浮き上がる効果 */
+    }
+
+    button:disabled {
+        background-color: #a0a0a0;
+        cursor: not-allowed;
+    }
+
+    /* AIコメントとまとめエリアの共通スタイル */
+    .comment {
+        padding: 20px;
+        margin-top: 20px;
+        border-radius: 8px;
+        border-left: 5px solid;
+        box-shadow: 0 2px 8px var(--shadow-color);
+    }
+
+    /* AIからのコメント */
+    #ai-comment {
+        background-color: #e8f5e9; /* 薄い緑 */
+        border-color: #4caf50;
+    }
+
+    /* AIによるまとめ */
+    #summary-area {
+        background-color: #fff3e0; /* 薄いオレンジ */
+        border-color: #ff9800;
+    }
+
+    #diary-list {
+        list-style: none;
+        padding: 0;
+    }
+
+    #diary-list li {
+        background-color: var(--card-bg-color);
+        padding: 15px 20px;
+        margin-bottom: 10px;
+        border-radius: 8px;
+        box-shadow: 0 2px 4px var(--shadow-color);
+        transition: transform 0.2s;
+    }
+
+    #diary-list li:hover {
+        transform: translateX(5px);
+    }
+
+    hr {
+        border: none;
+        border-top: 1px solid #e0e0e0;
+        margin: 40px 0;
+    }
+</style>
 </head>
 <body>
-    <h1>AI日記</h1>
+    <h1>AI-MY-DIARY</h1>
     <form id="diary-form">
         <label for="emotion">今日の気分は？</label>
         <select id="emotion" name="emotion">

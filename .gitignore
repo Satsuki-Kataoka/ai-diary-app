@@ -137,6 +137,7 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+<<<<<<< HEAD
 
 # .gitignoreの末尾に追記
 
@@ -145,3 +146,5 @@ vite.config.ts.timestamp-*
 
 # データベースファイル
 *.db
+=======
+>>>>>>> f760614f965b619e2fe344c4432541b75ffc5e24

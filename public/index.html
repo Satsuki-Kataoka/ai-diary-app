@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>AI日記</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: auto; padding: 20px; background-color: #f9f9f9; }
+        h1, h2 { color: #333; }
+        form { background-color: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        textarea { width: 100%; height: 150px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; padding: 10px; }
+        button { background-color: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #0056b3; }
+        .comment { background-color: #e9f7ef; border-left: 4px solid #28a745; padding: 15px; margin-top: 20px; border-radius: 5px; }
+        #diary-list { list-style: none; padding: 0; }
+        #diary-list li { background-color: white; padding: 10px; margin-bottom: 5px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+    <h1>AI日記</h1>
+    <form id="diary-form">
+        <label for="emotion">今日の気分は？</label>
+        <select id="emotion" name="emotion">
+            <option value="happy">😊 嬉しい</option>
+            <option value="sad">😢 悲しい</option>
+            <option value="angry">😠 怒り</option>
+            <option value="normal">😐 普通</option>
+        </select>
+        <br><br>
+        <label for="content">日記をどうぞ</label><br>
+        <textarea id="content" name="content" required></textarea>
+        <br><br>
+        <button type="submit">記録する</button>
+    </form>
+
+    <div id="ai-comment" class="comment" style="display:none;">
+        <h3>AIからのコメント</h3>
+        <p id="comment-text"></p>
+    </div>
+    
+    <hr>
+    <h2>過去の日記</h2>
+    <ul id="diary-list"></ul>
+
+    <script src="/script.js"></script>
+</body>
+</html>

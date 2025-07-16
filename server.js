@@ -10,7 +10,7 @@ const port = 3000;
 // データベース設定
 const db = new sqlite3.Database('./diary.db');
 db.serialize(() => {
-    db.run("CREATE TABLE IF NOT EXISTS diaries (id INTEGER PRIMARY KEY, date TEXT, emotion TEXT, content TEXT, ai_comment TEXT)");
+    db.run("CREATE TABLE IF NOT EXISTS diaries (id INTEGER PRIMARY KEY, date TEXT, emotion TEXT, title TEXT, content TEXT, ai_comment TEXT)");
 });
 
 // Google AI設定
@@ -21,8 +21,8 @@ app.use(express.static('public'));
 
 // API: 日記を保存
 app.post('/api/diaries', async (req, res) => {
-    const { emotion, content } = req.body;
-    if (!content) return res.status(400).json({ error: '内容を入力してください' });
+    const { emotion, title, content } = req.body;
+    if (!content || !title) return res.status(400).json({ error: '内容を入力してください' });
 
     try {
         const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
@@ -32,8 +32,8 @@ app.post('/api/diaries', async (req, res) => {
         const aiComment = (await result.response).text();
 
         const date = new Date().toISOString();
-        const stmt = db.prepare("INSERT INTO diaries (date, emotion, content, ai_comment) VALUES (?, ?, ?, ?)");
-        stmt.run(date, emotion, content, aiComment, function(err) {
+        const stmt = db.prepare("INSERT INTO diaries (date, emotion, title, content, ai_comment) VALUES (?, ?, ?, ?, ?)");
+        stmt.run(date, emotion, title, content, aiComment, function(err) {
             if (err) return res.status(500).json({ error: err.message });
             res.json({ id: this.lastID, ai_comment: aiComment });
         });
@@ -47,7 +47,7 @@ app.post('/api/diaries', async (req, res) => {
 
 // API: 過去の日記一覧を取得
 app.get('/api/diaries', (req, res) => {
-    db.all("SELECT id, date, content FROM diaries ORDER BY date DESC", [], (err, rows) => {
+    db.all("SELECT * FROM diaries ORDER BY date DESC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
     });
@@ -79,6 +79,20 @@ app.get('/api/summary', async (req, res) => {
             console.error("Summary generation failed:", error);
             res.status(500).json({ error: "まとめの生成に失敗しました。" });
         }
+    });
+});
+
+// API: 特定のIDの日記を取得
+app.get('/api/diaries/:id', (req, res) => {
+    const id = req.params.id; // URLからIDを取得
+    db.get("SELECT * FROM diaries WHERE id = ?", [id], (err, row) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!row) {
+            return res.status(404).json({ error: '日記が見つかりません' });
+        }
+        res.json(row);
     });
 });
 

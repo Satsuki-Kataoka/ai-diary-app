@@ -146,18 +146,38 @@
         margin: 40px 0;
     }
 </style>
+
+<!-- FullCalendarのライブラリを読み込み -->
+<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+
 </head>
 <body>
     <h1>AI-MY-DIARY</h1>
+
+    <!-- カレンダーを表示するエリア -->
+    <div id='calendar'></div>
+    <hr> <!-- 見た目の区切り線 -->
+
     <form id="diary-form">
         <label for="emotion">今日の気分は？</label>
         <select id="emotion" name="emotion">
-            <option value="happy">😊 嬉しい</option>
-            <option value="sad">😢 悲しい</option>
-            <option value="angry">😠 怒り</option>
-            <option value="normal">😐 普通</option>
-        </select>
+    	　<option value="happy">😊 嬉しい</option>
+    	  <option value="excited">🤩 わくわく</option>
+    	  <option value="relaxed">😌 リラックス</option>
+    	  <option value="tired">😴 疲れた</option>
+    	  <option value="anxious">😥 不安</option>
+    	  <option value="angry">😠 怒り</option>
+    	  <option value="sad">😢 悲しい</option>
+    	  <option value="normal">😐 普通</option>
+	</select>
         <br><br>
+
+	<!-- タイトル入力欄 (ここから追加) -->
+	<label for="title">タイトル</label><br>
+	<input type="text" id="title" name="title" required style="width: 100%; box-sizing: border-box; padding: 5px;">
+	<br><br>
+	<!-- (ここまで追加) -->
+
         <label for="content">日記をどうぞ</label><br>
         <textarea id="content" name="content" required></textarea>
         <br><br>

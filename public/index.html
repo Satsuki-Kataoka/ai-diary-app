@@ -1,205 +1,309 @@
 <!DOCTYPE html>
 <html lang="ja">
 <head>
-    <meta charset="UTF-8">
-    <title>AI-MY-DIARY</title>
+    <!-- Google Fonts（M PLUS Rounded 1c）を読み込み -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;700&display=swap" rel="stylesheet">
-<style>
-    /* --- 明るく親しみやすいデザイン --- */
-    :root {
-        --primary-color: #4a90e2; /* メインカラー（爽やかな青） */
-        --secondary-color: #f7f9fc; /* 背景色（ごく薄い青） */
-        --accent-color: #50e3c2; /* アクセントカラー（ミントグリーン） */
-        --font-color: #333;
-        --card-bg-color: #ffffff;
-        --shadow-color: rgba(0, 0, 0, 0.08);
-    }
+    <link href="https://fonts.googleapis.com/css2?family=M+PLUS+Rounded+1c:wght@300;400;700&display=swap" rel="stylesheet">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI日記</title>
 
-    body {
-        font-family: 'Noto Sans JP', sans-serif; /* ステップ1で導入したフォントを適用 */
-        background-color: var(--secondary-color);
-        color: var(--font-color);
-        max-width: 680px;
-        margin: 20px auto;
-        padding: 20px;
-        line-height: 1.6;
-    }
+    <!-- FullCalendarのライブラリ -->
+    <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
+    
+    <!-- BootstrapのCSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 
-    h1, h2 {
-        color: var(--primary-color);
-        text-align: center;
-        font-weight: 700;
-    }
+    <!-- Bootstrap Iconsを読み込み -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 
-    h1 {
-        font-size: 2.5em;
-        margin-bottom: 30px;
-    }
+    <!-- 独自の簡単なスタイル（任意） -->
+    <style>
+/* 独自の可愛いスタイル */
+:root {
+    --pastel-pink: #fbc4d4; /* メインカラー */
+    --pastel-cream: #fff5e4; /* サブカラー */
+    --pastel-mint: #d4e7d4; /* アクセントカラー1 */
+    --pastel-sky: #c6dcf2; /* アクセントカラー2 */
+    --text-color: #6a5a5a; /* 文字色 */
+    --font-family-cute: 'M PLUS Rounded 1c', sans-serif; /* 可愛いフォント */
+}
 
-    h2 {
-        font-size: 1.8em;
-        border-bottom: 2px solid #e0e0e0;
-        padding-bottom: 10px;
-        margin-top: 40px;
-    }
+/* 全体にフォントと基本スタイルを適用 */
+body {
+    font-family: var(--font-family-cute);
+    background-color: var(--pastel-cream);
+    color: var(--text-color);
+    font-weight: 400; /* 通常の太さ */
+}
 
-    form {
-        background-color: var(--card-bg-color);
-        padding: 30px;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px var(--shadow-color);
-        margin-bottom: 40px;
-    }
+/* h1, h2 見出し */
+h1, h2 {
+    color: var(--pastel-pink);
+    font-weight: 700; /* 太くして目立たせる */
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8); /* ほんのり影をつける */
+}
+h1::before {
+    content: "୨୧ "; /* 特殊文字で飾り付け */
+}
+h1::after {
+    content: " ୨୧";
+}
 
-    label {
-        font-weight: 700;
-        margin-bottom: 8px;
-        display: inline-block;
-    }
+/* カードやフォームなどの背景を少し丸く、影をつける */
+.card, .accordion-item, .alert, #calendar {
+    border: 1px solid #eee;
+    border-radius: 15px !important; /* 角を大きく丸く！ */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    transition: all 0.3s ease; /* ふわっと変化するアニメーション */
+}
+.card:hover, .accordion-item:hover {
+    transform: translateY(-5px); /* マウスを乗せると少し浮き上がる */
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+}
 
-    textarea, select {
-        width: 100%;
-        padding: 12px;
-        box-sizing: border-box;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        font-family: inherit;
-        font-size: 1em;
-        transition: border-color 0.3s, box-shadow 0.3s;
-    }
+/* フォームの入力欄 */
+.form-control, .form-select {
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--pastel-pink);
+    box-shadow: 0 0 8px var(--pastel-pink);
+}
 
-    textarea:focus, select:focus {
-        outline: none;
-        border-color: var(--primary-color);
-        box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.2);
-    }
+/* ボタン類 */
+.btn {
+    border-radius: 20px; /* ボタンを丸っこく */
+    padding: 8px 20px;
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+}
+.btn-primary {
+    background-color: var(--pastel-pink);
+    border-color: var(--pastel-pink);
+}
+.btn-primary:hover {
+    transform: scale(1.05); /* マウスを乗せると少し大きくなる */
+}
 
-    button {
-        background-color: var(--primary-color);
-        color: white;
-        border: none;
-        padding: 12px 20px;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 1.1em;
-        font-weight: 700;
-        display: block;
-        width: 100%;
-        margin-top: 20px;
-        transition: background-color 0.3s, transform 0.2s;
-    }
+/* アコーディオン（日記を書くエリア） */
+.accordion-button:not(.collapsed) {
+    background-color: var(--pastel-cream);
+    color: var(--text-color);
+}
+.accordion-button:focus {
+    box-shadow: none; /* フォーカス時の青い枠線を消す */
+}
 
-    button:hover {
-        background-color: #357ABD;
-        transform: translateY(-2px); /* 少し浮き上がる効果 */
-    }
+/* AIからのコメント */
+.alert-success {
+    background-color: var(--pastel-mint);
+    border: none;
+    color: var(--text-color);
+}
 
-    button:disabled {
-        background-color: #a0a0a0;
-        cursor: not-allowed;
-    }
+/* AIによるまとめ */
+.alert-info {
+    background-color: var(--pastel-sky);
+    border: none;
+    color: var(--text-color);
+}
 
-    /* AIコメントとまとめエリアの共通スタイル */
-    .comment {
-        padding: 20px;
-        margin-top: 20px;
-        border-radius: 8px;
-        border-left: 5px solid;
-        box-shadow: 0 2px 8px var(--shadow-color);
-    }
+/* 過去の日記リスト */
+.list-group-item {
+    border-radius: 10px !important;
+    margin-bottom: 10px;
+    border: 1px solid #eee;
+}
 
-    /* AIからのコメント */
-    #ai-comment {
-        background-color: #e8f5e9; /* 薄い緑 */
-        border-color: #4caf50;
-    }
+/* カレンダー */
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(251, 196, 212, 0.3); /* 今日の日付の背景を薄いピンクに */
+}
+.fc-event {
+    border-radius: 10px !important;
+}
 
-    /* AIによるまとめ */
-    #summary-area {
-        background-color: #fff3e0; /* 薄いオレンジ */
-        border-color: #ff9800;
-    }
+/* モーダルウィンドウ */
+.modal-content {
+    border-radius: 20px;
+    border: none;
+}
+.modal-header {
+    background-color: var(--pastel-pink);
+    color: white;
+    border-top-left-radius: 20px;
+    border-top-right-radius: 20px;
+}
+.btn-close {
+    filter: brightness(0) invert(1); /* 閉じるボタンを白く */
+}
+/* タブのデザインを可愛くする */
+.nav-tabs .nav-link {
+    border: none;
+    border-top-left-radius: 10px;
+    border-top-right-radius: 10px;
+    color: var(--text-color);
+    background-color: transparent;
+}
 
-    #diary-list {
-        list-style: none;
-        padding: 0;
-    }
-
-    #diary-list li {
-        background-color: var(--card-bg-color);
-        padding: 15px 20px;
-        margin-bottom: 10px;
-        border-radius: 8px;
-        box-shadow: 0 2px 4px var(--shadow-color);
-        transition: transform 0.2s;
-    }
-
-    #diary-list li:hover {
-        transform: translateX(5px);
-    }
-
-    hr {
-        border: none;
-        border-top: 1px solid #e0e0e0;
-        margin: 40px 0;
-    }
-</style>
-
-<!-- FullCalendarのライブラリを読み込み -->
-<script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js'></script>
-
+.nav-tabs .nav-link.active {
+    background-color: white;
+    font-weight: 700;
+    color: var(--pastel-pink);
+    border-bottom: 3px solid var(--pastel-pink);
+}
+    </style>
 </head>
 <body>
-    <h1>AI-MY-DIARY</h1>
 
-    <!-- カレンダーを表示するエリア -->
-    <div id='calendar'></div>
-    <hr> <!-- 見た目の区切り線 -->
+    <!-- 全体をコンテナで囲む -->
+    <div class="container mt-4 mb-5">
+        
+        <!-- アプリのタイトル -->
+        <h1 class="text-center mb-4">AI日記</h1>
 
-    <form id="diary-form">
-        <label for="emotion">今日の気分は？</label>
-        <select id="emotion" name="emotion">
-    	　<option value="happy">😊 嬉しい</option>
-    	  <option value="excited">🤩 わくわく</option>
-    	  <option value="relaxed">😌 リラックス</option>
-    	  <option value="tired">😴 疲れた</option>
-    	  <option value="anxious">😥 不安</option>
-    	  <option value="angry">😠 怒り</option>
-    	  <option value="sad">😢 悲しい</option>
-    	  <option value="normal">😐 普通</option>
-	</select>
-        <br><br>
+        <!-- ===== ここからタブ構造 ===== -->
 
-	<!-- タイトル入力欄 (ここから追加) -->
-	<label for="title">タイトル</label><br>
-	<input type="text" id="title" name="title" required style="width: 100%; box-sizing: border-box; padding: 5px;">
-	<br><br>
-	<!-- (ここまで追加) -->
+        <!-- 1. タブ切り替えボタン部分 (Nav tabs) -->
+        <ul class="nav nav-tabs nav-fill mb-3" id="myTab" role="tablist">
+            <li class="nav-item" role="presentation">
+                <button class="nav-link active" id="calendar-tab" data-bs-toggle="tab" data-bs-target="#calendar-tab-pane" type="button" role="tab">
+                    <i class="bi bi-calendar-heart me-2"></i>カレンダー
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="write-tab" data-bs-toggle="tab" data-bs-target="#write-tab-pane" type="button" role="tab">
+                    <i class="bi bi-pencil-square me-2"></i>日記を書く
+                </button>
+            </li>
+            <li class="nav-item" role="presentation">
+                <button class="nav-link" id="list-tab" data-bs-toggle="tab" data-bs-target="#list-tab-pane" type="button" role="tab">
+                    <i class="bi bi-collection me-2"></i>日記一覧
+                </button>
+            </li>
+        </ul>
 
-        <label for="content">日記をどうぞ</label><br>
-        <textarea id="content" name="content" required></textarea>
-        <br><br>
-        <button type="submit">記録する</button>
-    </form>
+        <!-- 2. タブのコンテンツ部分 (Tab panes) -->
+        <div class="tab-content" id="myTabContent">
+            
+            <!-- カレンダーのタブの中身 -->
+            <div class="tab-pane fade show active" id="calendar-tab-pane" role="tabpanel">
+                <div class="p-3 bg-white rounded shadow-sm">
+                    <div id='calendar'></div>
+                </div>
+            </div>
 
-    <div id="ai-comment" class="comment" style="display:none;">
-        <h3>AIからのコメント</h3>
-        <p id="comment-text"></p>
-    </div>
-    
-        <hr>
-        <button id="summary-button">日記のまとめを作成する</button>
-        <div id="summary-area" class="comment" style="display:none; border-left-color: #ffc107;">
-            <h3>AIによるまとめ</h3>
-            <p id="summary-text"></p>
+            <!-- 日記を書くタブの中身 -->
+            <div class="tab-pane fade" id="write-tab-pane" role="tabpanel">
+                <div class="p-3 bg-white rounded shadow-sm">
+                    <!-- 日記入力フォーム -->
+                    <form id="diary-form">
+			<!-- ★この隠しフィールドを追加 -->
+			<input type="hidden" id="diary-id">
+
+                        <div class="mb-3">
+                            <label for="emotion" class="form-label">今日の気分は？</label>
+                            <select id="emotion" name="emotion" class="form-select">
+                                <option value="happy">😊 嬉しい</option>
+                                <option value="excited">🤩 わくわく</option>
+                                <option value="relaxed">😌 リラックス</option>
+                                <option value="tired">😴 疲れた</option>
+                                <option value="anxious">😥 不安</option>
+                                <option value="angry">😠 怒り</option>
+                                <option value="sad">😢 悲しい</option>
+                                <option value="normal">😐 普通</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="title" class="form-label">タイトル</label>
+                            <input type="text" id="title" name="title" class="form-control" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="content" class="form-label">日記をどうぞ</label>
+                            <textarea id="content" name="content" class="form-control" rows="5" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg me-2"></i> 記録する
+                        </button>
+                    </form>
+
+                    <!-- AIからのコメント -->
+                    <div id="ai-comment" class="alert alert-success mt-4" role="alert" style="display:none;">
+                        <h4 class="alert-heading">AIからのコメント</h4>
+                        <p id="comment-text"></p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 日記一覧のタブの中身 -->
+            <div class="tab-pane fade" id="list-tab-pane" role="tabpanel">
+                <div class="p-3 bg-white rounded shadow-sm">
+                    <!-- まとめ機能 -->
+                    <div class="d-grid gap-2 mb-3">
+                        <button id="summary-button" class="btn btn-outline-info">
+                            <i class="bi bi-book-half me-2"></i> 日記のまとめを作成する
+                        </button>
+                    </div>
+                    <div id="summary-area" class="alert alert-info" style="display:none;">
+                        <h4 class="alert-heading">AIによるまとめ</h4>
+                        <p id="summary-text"></p>
+                    </div>
+                    <!-- 過去の日記一覧 -->
+                    <ul id="diary-list" class="list-group mt-3">
+                        <!-- JavaScriptによってここにリスト項目が動的に追加されます -->
+                    </ul>
+                </div>
+            </div>
         </div>
+    </div>
 
-    <hr>
-    <h2>過去の日記</h2>
-    <ul id="diary-list"></ul>
+    <!-- 詳細表示用のモーダル（ポップアップウィンドウ） -->
+    <div class="modal fade" id="diaryDetailModal" tabindex="-1" aria-labelledby="diaryDetailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="diaryDetailModalLabel"></h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <p><strong>日付:</strong> <span id="modalDate"></span></p>
+                    <p><strong>気分:</strong> <span id="modalEmotion"></span></p>
+                    <hr>
+                    <p><strong>【内容】</strong></p>
+                    <p id="modalContent" style="white-space: pre-wrap;"></p>
+                    <hr>
+                    <p class="mb-0"><strong>【AIからのコメント】</strong></p>
+                    <p id="modalAiComment" class="text-muted fst-italic"></p>
+                </div>
+                <div class="modal-footer">
+		    <button type="button" class="btn btn-outline-danger me-auto" id="delete-button">削除する</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">閉じる</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
+<!-- 記録完了通知用のトースト -->
+<div class="toast-container position-fixed top-0 end-0 p-3">
+    <div id="saveToast" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+        <div class="toast-header bg-success text-white">
+            <i class="bi bi-check-circle-fill me-2"></i>
+            <strong class="me-auto">AI日記</strong>
+            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+        <div class="toast-body">
+            日記を記録しました！
+        </div>
+    </div>
+</div>
+    
+    <!-- BootstrapのJavaScript（Popper.jsも含む） -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 最後に自分のJavaScriptファイルを読み込み -->
     <script src="/script.js"></script>
+
 </body>
 </html>

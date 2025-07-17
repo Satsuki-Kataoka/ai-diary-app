@@ -82,6 +82,19 @@ app.get('/api/summary', async (req, res) => {
     });
 });
 
+// API: 今日の日記を取得する
+app.get('/api/diaries/today', (req, res) => {
+    const today = new Date().toISOString().slice(0, 10);
+    db.get("SELECT * FROM diaries WHERE date LIKE ?", [`${today}%`], (err, row) => {
+        if (err) return res.status(500).json({ error: err.message });
+        if (row) {
+            res.json(row);
+        } else {
+            res.status(404).json({ message: '今日の日記はまだありません' });
+        }
+    });
+});
+
 // API: 特定のIDの日記を取得
 app.get('/api/diaries/:id', (req, res) => {
     const id = req.params.id; // URLからIDを取得
@@ -93,6 +106,54 @@ app.get('/api/diaries/:id', (req, res) => {
             return res.status(404).json({ error: '日記が見つかりません' });
         }
         res.json(row);
+    });
+});
+
+// API: 既存の日記を更新(追記)する
+app.put('/api/diaries/:id', async (req, res) => {
+    const { id } = req.params;
+    const { emotion, title, content } = req.body;
+    if (!title || !content) {
+        return res.status(400).json({ error: 'タイトルと内容を入力してください' });
+    }
+
+    try {
+        // 更新された内容で、AIに再度コメントを依頼
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+        const prompt = `あなたはユーザーに寄り添う、優しいカウンセラーです。以下の更新された日記に対して、ポジティブで短いコメントを返してください。\n\n気分：${emotion}\nタイトル：${title}\n日記：${content}`;
+        const result = await model.generateContent(prompt);
+        const aiComment = (await result.response).text();
+
+        // UPDATE文でデータベースを更新
+        const stmt = db.prepare("UPDATE diaries SET emotion = ?, title = ?, content = ?, ai_comment = ? WHERE id = ?");
+        stmt.run(emotion, title, content, aiComment, id, function (err) {
+            if (err) {
+                return res.status(500).json({ error: err.message });
+            }
+            res.json({ ai_comment: aiComment, message: '日記を更新しました' });
+        });
+        stmt.finalize();
+
+    } catch (error) {
+        console.error("Diary update failed:", error);
+        res.status(500).json({ error: '日記の更新に失敗しました' });
+    }
+});
+
+// API: 特定のIDの日記を削除する
+app.delete('/api/diaries/:id', (req, res) => {
+    const { id } = req.params;
+
+    db.run("DELETE FROM diaries WHERE id = ?", id, function (err) {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        // 変更された行が0より大きいか（=削除が成功したか）をチェック
+        if (this.changes > 0) {
+            res.json({ message: '日記を削除しました' });
+        } else {
+            res.status(404).json({ error: '削除対象の日記が見つかりません' });
+        }
     });
 });
 

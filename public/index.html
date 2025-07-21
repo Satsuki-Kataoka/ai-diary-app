@@ -23,7 +23,7 @@
 /* 独自の可愛いスタイル */
 :root {
     --pastel-pink: #fbc4d4; /* メインカラー */
-    --pastel-cream: #fff5e4; /* サブカラー */
+    --pastel-cream: #faf5ed; /* サブカラー */
     --pastel-mint: #d4e7d4; /* アクセントカラー1 */
     --pastel-sky: #c6dcf2; /* アクセントカラー2 */
     --text-color: #6a5a5a; /* 文字色 */
@@ -81,11 +81,13 @@ h1::after {
     transition: all 0.2s ease-in-out;
 }
 .btn-primary {
-    background-color: var(--pastel-pink);
-    border-color: var(--pastel-pink);
+    background-color: var(--pastel-sky);
+    border-color: var(--pastel-sky);
 }
 .btn-primary:hover {
-    transform: scale(1.05); /* マウスを乗せると少し大きくなる */
+    color: var(--pastel-sky); /* 文字と枠線の色 */
+    background-color: white;
+    border-color: var(--pastel-sky);
 }
 
 /* アコーディオン（日記を書くエリア） */
@@ -111,6 +113,19 @@ h1::after {
     color: var(--text-color);
 }
 
+/* まとめ作成ボタン（btn-outline-info）のスタイルを上書き */
+.btn-outline-info {
+    color: var(--pastel-sky); /* 文字と枠線の色 */
+    border-color: var(--pastel-sky); /* 枠線の色 */
+}
+
+/* マウスを乗せたときのスタイル */
+.btn-outline-info:hover {
+    color: white; /* 文字を白に */
+    background-color: var(--pastel-sky); /* 背景色を塗る */
+    border-color: var(--pastel-sky);
+}
+
 /* 過去の日記リスト */
 .list-group-item {
     border-radius: 10px !important;
@@ -118,12 +133,104 @@ h1::after {
     border: 1px solid #eee;
 }
 
-/* カレンダー */
-.fc .fc-daygrid-day.fc-day-today {
-    background-color: rgba(251, 196, 212, 0.3); /* 今日の日付の背景を薄いピンクに */
+/* ===== カレンダーのスタイル調整 ===== */
+
+/* カレンダー全体 */
+#calendar {
+    --fc-border-color: #eee; /* カレンダーの枠線の色 */
+    --fc-daygrid-event-dot-width: 8px; /* イベントの点の大きさ */
 }
-.fc-event {
-    border-radius: 10px !important;
+
+/* 曜日ヘッダー（日, 月, 火...）のスタイル */
+.fc-col-header-cell {
+    background-color: var(--pastel-cream); /* 背景色をアプリのベースカラーに */
+}
+
+/* ★曜日ヘッダー内のテキスト（aタグ）を直接指定 */
+.fc-col-header-cell-cushion {
+    color: var(--text-color) !important; /* ★文字色を直接指定し、!importantで強制 */
+    text-decoration: none !important; /* ★下線を消す */
+    font-weight: 700;
+}
+
+/* 日付の数字のスタイル */
+.fc-daygrid-day-number {
+    color: var(--text-color); /* 日付の数字の色を少し柔らかく */
+    font-size: 1.1em;
+    text-decoration: none; /* ★下線が表示される場合はこの行を追加 */
+}
+
+/* 今日の日付のマスの背景色 */
+.fc .fc-daygrid-day.fc-day-today {
+    background-color: rgba(251, 196, 212, 0.3); /* 薄いピンク（変更なし） */
+}
+
+/* ★★★ 日記タイトルの帯（イベント）の色 ★★★ */
+.fc-daygrid-event {
+    background-color: var(--pastel-sky); /* ★帯の背景色をパステルスカイに */
+    border: none; /* 枠線を消す */
+    color: var(--text-color) !important; /* ★文字色をアプリの基本文字色に（!importantで強制） */
+    text-decoration: none; /* ★下線が表示される場合はこの行を追加 */
+    padding: 2px 6px;
+    border-radius: 8px;
+    font-weight: 700;
+}
+/* イベントの白い点のスタイル */
+.fc-daygrid-event-dot {
+    border-color: white !important; /* 点の色を白に */
+}
+
+/* ===== カレンダーのツールバーボタンのスタイル ===== */
+
+/* ツールバーのボタングループ全体 */
+.fc .fc-button-group {
+    /* ボタン同士の隙間を少し空ける */
+    gap: 5px;
+}
+
+/* ツールバーの各ボタン共通のスタイル */
+.fc .fc-button {
+    background-color: white; /* 基本の背景色 */
+    color:  var(--pastel-sky); /* 文字色 */
+    border: 1px solid #eee;
+    border-radius: 20px !important; /* ★角を丸っこく */
+    padding: 6px 15px;
+    font-weight: 700;
+    transition: all 0.2s ease-in-out;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.05); /* ほんのり影 */
+    text-transform: capitalize; /* todayなどをTodayのように頭文字を大文字に */
+}
+
+/* ★アクティブなボタン（選択中のビュー、例：month）のスタイル */
+.fc .fc-button-primary:not(:disabled).fc-button-active {
+    background-color: var(--pastel-pink);
+    border-color: var(--pastel-pink);
+    color: white;
+}
+
+/* ボタンにマウスを乗せたときのスタイル */
+.fc .fc-button:hover {
+    transform: translateY(-2px); /* 少し浮き上がる */
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background-color: var(--pastel-cream);
+    border-color: #ddd;
+}
+
+/* Todayボタンを特別に目立たせるスタイル */
+.fc .fc-today-button {
+    background-color: var(--pastel-sky);
+    border-color: var(--pastel-sky);
+    color: white;
+}
+.fc .fc-today-button:hover {
+    background-color: var(--pastel-sky); /* ホバー時にもう少し濃い色に */
+    border-color: #a9c5e2;
+}
+
+/* ボタンが無効なとき（例：Todayボタンが今日の月のとき）のスタイル */
+.fc .fc-button:disabled {
+    background-color: var(--pastel-sky);
+    opacity: 0.7;
 }
 
 /* モーダルウィンドウ */
@@ -155,9 +262,60 @@ h1::after {
     color: var(--pastel-pink);
     border-bottom: 3px solid var(--pastel-pink);
 }
+
+/* ===== 背景にお花を咲かせるスタイル【五つ葉・最終版】 ===== */
+
+/* 左右の背景カーテン（変更なし） */
+.flower-curtain { /* ... */ }
+
+/* 花の土台 */
+.diary-flower {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    opacity: 0;
+    transform: scale(0);
+    transition: opacity 1.2s ease-out, transform 1.2s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+/* 5枚の花びらのスタイル */
+.diary-flower .petal-shape {
+    position: absolute;
+    top: 0;
+    left: 50%;
+    width: 40%;
+    height: 50%;
+    background-color: var(--flower-color, var(--pastel-pink));
+    border-radius: 50% 50% 50% 50% / 40% 40% 50% 50%; /* 涙滴状 */
+    transform-origin: bottom center; /* 回転の中心は下端中央 */
+}
+
+/* 各花びらを回転させて配置 */
+.diary-flower .petal-shape:nth-child(1) { transform: rotate(0deg)   translateY(-10%); }
+.diary-flower .petal-shape:nth-child(2) { transform: rotate(72deg)  translateY(-10%); }
+.diary-flower .petal-shape:nth-child(3) { transform: rotate(144deg) translateY(-10%); }
+.diary-flower .petal-shape:nth-child(4) { transform: rotate(216deg) translateY(-10%); }
+.diary-flower .petal-shape:nth-child(5) { transform: rotate(288deg) translateY(-10%); }
+
+/* 中心の丸のスタイル */
+.diary-flower .center-circle {
+    position: absolute;
+    top: 50%;
+    left: 68%;
+    width: 30%;
+    height: 30%;
+    background-color: white;
+    border-radius: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 2; /* 花びらより手前に */
+}
     </style>
 </head>
 <body>
+
+    <!-- ★背景の花を配置する左右のカーテンを追加 -->
+    <div id="left-curtain" class="flower-curtain"></div>
+    <div id="right-curtain" class="flower-curtain"></div>
 
     <!-- 全体をコンテナで囲む -->
     <div class="container mt-4 mb-5">
@@ -189,12 +347,12 @@ h1::after {
         <!-- 2. タブのコンテンツ部分 (Tab panes) -->
         <div class="tab-content" id="myTabContent">
             
-            <!-- カレンダーのタブの中身 -->
-            <div class="tab-pane fade show active" id="calendar-tab-pane" role="tabpanel">
-                <div class="p-3 bg-white rounded shadow-sm">
-                    <div id='calendar'></div>
-                </div>
-            </div>
+       <!-- カレンダーのタブの中身 -->
+<div class="tab-pane fade show active" id="calendar-tab-pane" role="tabpanel">
+    <div class="p-3 bg-white rounded shadow-sm">
+        <div id='calendar'></div>
+    </div>
+</div>
 
             <!-- 日記を書くタブの中身 -->
             <div class="tab-pane fade" id="write-tab-pane" role="tabpanel">
@@ -266,16 +424,25 @@ h1::after {
             <div class="modal-content">
                 <div class="modal-header">
                     <h5 class="modal-title" id="diaryDetailModalLabel"></h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    
                 </div>
                 <div class="modal-body">
+                    <!-- id="modalDate" (日付用) -->
                     <p><strong>日付:</strong> <span id="modalDate"></span></p>
+                    
+                    <!-- id="modalEmotion" (気分用) -->
                     <p><strong>気分:</strong> <span id="modalEmotion"></span></p>
+                    
                     <hr>
                     <p><strong>【内容】</strong></p>
+                    
+                    <!-- id="modalContent" (内容用) -->
                     <p id="modalContent" style="white-space: pre-wrap;"></p>
+                    
                     <hr>
                     <p class="mb-0"><strong>【AIからのコメント】</strong></p>
+                    
+                    <!-- id="modalAiComment" (AIコメント用) -->
                     <p id="modalAiComment" class="text-muted fst-italic"></p>
                 </div>
                 <div class="modal-footer">

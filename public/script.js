@@ -129,6 +129,80 @@ document.addEventListener('DOMContentLoaded', () => {
             console.error('今日の日記の読み込みに失敗:', error);
         }
     }
+
+// 左右のカーテンにお花を咲かせる関数（五つ葉バージョン）
+function bloomFlowersOnCurtains(diaries) {
+    const leftCurtain = document.getElementById('left-curtain');
+    const rightCurtain = document.getElementById('right-curtain');
+
+    leftCurtain.innerHTML = '';
+    rightCurtain.innerHTML = '';
+
+    diaries.forEach((diary, index) => {
+        const flower = document.createElement('div');
+        flower.className = 'diary-flower';
+
+        // 1. 5枚の花びらをループで生成
+        for (let i = 0; i < 5; i++) {
+            const petal = document.createElement('span');
+            petal.className = 'petal-shape'; // CSSで定義した花びら用のクラス
+            flower.appendChild(petal);
+        }
+
+        // 2. 中心の丸を生成
+        const centerCircle = document.createElement('span');
+        centerCircle.className = 'center-circle'; // CSSで定義した中心用のクラス
+        flower.appendChild(centerCircle);
+
+        // 位置、サイズ、色などをランダムに設定
+        //const x = Math.random() * 80;
+        //const y = 5 + Math.random() * 90;
+        const size = 35 + Math.random() * 45; // 少し大きめに
+        const rotation = -45 + Math.random() * 90;
+
+        // 縦位置を、画面の上部(10%～35%)と下部(65%～90%)に限定する
+        let x;
+        if (Math.random() < 0.5) {
+            // 50%の確率で、画面の上の方に配置
+            x = 5 + Math.random() * 10;
+        } else {
+            // 残り50%の確率で、画面の下の方に配置
+            x = 80 + Math.random() * 10;
+        }
+
+        // 縦位置を、画面の上部(10%～35%)と下部(65%～90%)に限定する
+        let y;
+        if (Math.random() < 0.5) {
+            // 50%の確率で、画面の上の方に配置
+            y = 5 + Math.random() * 10;
+        } else {
+            // 残り50%の確率で、画面の下の方に配置
+            y = 80 + Math.random() * 10;
+        }
+        
+        const colors = ['#fbc4d4', '#c6dcf2', '#d4e7d4'];
+        const colorIndex = new Date(diary.date).getDate() % colors.length;
+        const color = colors[colorIndex];
+        
+        flower.style.setProperty('--flower-color', color);
+        
+        flower.style.left = `${x}%`;
+        flower.style.top = `${y}%`;
+        flower.style.width = `${size}px`;
+        flower.style.height = `${size}px`;
+        
+        if (index % 2 === 0) {
+            leftCurtain.appendChild(flower);
+        } else {
+            rightCurtain.appendChild(flower);
+        }
+
+        setTimeout(() => {
+            flower.style.opacity = '0.9';
+            flower.style.transform = `scale(1) rotate(${rotation}deg)`;
+        }, 100 * index);
+    });
+}
     
     // ★トースト表示関数 (汎用化)
     function showToast(message) {
@@ -169,6 +243,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
         // --- ここまで ---
 
+        bloomFlowersOnCurtains(diaries);
+
         diaryList.appendChild(listItem);
     });
 
@@ -200,14 +276,15 @@ async function showDiaryDetail(id) {
         return;
     }
     const diary = await response.json();
+    const emotionOption = document.querySelector(`#emotion option[value="${diary.emotion}"]`);
 
     // モーダルの各要素にデータをセット
     document.getElementById('diaryDetailModalLabel').textContent = diary.title;
-    // ... (他のデータセット部分は変更なし) ...
+    document.getElementById('modalDate').textContent = new Date(diary.date).toLocaleString();
+    document.getElementById('modalEmotion').textContent = emotionOption ? emotionOption.textContent : diary.emotion;
+    document.getElementById('modalContent').textContent = diary.content;
     document.getElementById('modalAiComment').textContent = diary.ai_comment;
 
-    // --- ★ここからが削除機能の追加部分 ---
-    
     // 1. 削除ボタンの要素を取得
     const deleteButton = document.getElementById('delete-button');
 

@@ -3,6 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ① 使用するHTML要素をまとめて取得 ---
     const form = document.getElementById('diary-form');
+    const dateInput = document.getElementById('diary-date');
     const diaryIdInput = document.getElementById('diary-id'); // ★隠しフィールド
     const emotionSelect = document.getElementById('emotion');
     const titleInput = document.getElementById('title');
@@ -38,37 +39,45 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // ★「日記を書く」タブが表示されたときのイベント
     const writeTabButton = document.getElementById('write-tab');
-    writeTabButton.addEventListener('shown.bs.tab', loadTodaysDiaryIntoForm);
+    writeTabButton.addEventListener('shown.bs.tab', () => {
+        // 今日の日付を 'YYYY-MM-DD' 形式で取得
+        const today = new Date().toISOString().slice(0, 10);
+        if (!dateInput.value) { // 日付が空の場合のみ今日の日付を設定
+            dateInput.value = today;
+        }
+        loadDiaryForDate(today); // 今日（デフォルト）の日記を読み込む
+    });
+
+    // ★日付ピッカーの値が変更されたときのイベント (新規)
+    dateInput.addEventListener('change', () => {
+        loadDiaryForDate(dateInput.value);
+    });
 
     // 日記フォームの送信イベント
     form.addEventListener('submit', async (e) => {
-        e.preventDefault(); // フォームのデフォルトの送信動作をキャンセル
+    e.preventDefault();
 
-        const diaryId = diaryIdInput.value;
-        const isUpdating = !!diaryId; // IDがあれば更新モード
+    // ★常にPOSTメソッドで新しいAPIを呼び出す
+    const response = await fetch('/api/save-diary', {
+        method: 'POST', // 常にPOST
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+            date: dateInput.value,
+            emotion: emotionSelect.value,
+            title: titleInput.value,
+            content: contentTextarea.value
+        })
+    });
 
-        const url = isUpdating ? `/api/diaries/${diaryId}` : '/api/diaries';
-        const method = isUpdating ? 'PUT' : 'POST';
-        
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                emotion: emotionSelect.value,
-                title: titleInput.value,
-                content: contentTextarea.value
-            })
-        });
-
-        if (response.ok) {
-            const result = await response.json();
-            commentText.textContent = result.ai_comment;
-            aiCommentDiv.style.display = 'block';
-            loadDiaries(); // カレンダーとリストを更新
-            showToast(isUpdating ? '日記を更新しました！' : '日記を記録しました！');
-        } else {
-            alert('日記の保存/更新に失敗しました。');
-        }
+    if (response.ok) {
+        const result = await response.json();
+        commentText.textContent = result.ai_comment;
+        aiCommentDiv.style.display = 'block';
+        loadDiaries(); // 画面を更新
+        showToast(result.message || '日記を記録しました！'); // サーバーからのメッセージを表示
+    } else {
+        alert('日記の保存に失敗しました。');
+    }
     });
 
     // まとめ作成ボタンのクリックイベント
@@ -106,29 +115,144 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- ③ 関数定義 ---
 
-    // ★今日の日記をフォームに読み込む関数 (新規)
-    async function loadTodaysDiaryIntoForm() {
-        try {
-            const response = await fetch('/api/diaries/today');
-            if (response.ok) {
-                const diary = await response.json();
-                // データがあればフォームにセット
-                diaryIdInput.value = diary.id;
-                titleInput.value = diary.title;
-                emotionSelect.value = diary.emotion;
-                contentTextarea.value = diary.content;
-                aiCommentDiv.style.display = 'none'; // 古いAIコメントは一旦隠す
-            } else {
-                // 今日の日記がなければフォームをリセット
-                form.reset();
-                diaryIdInput.value = '';
-                aiCommentDiv.style.display = 'none';
+    // 【最終版】指定した日付の日記をフォームに読み込む関数
+async function loadDiaryForDate(dateStr) {
+    if (!dateStr) return; // 日付が空なら何もしない
 
+    try {
+        const response = await fetch(`/api/diaries/date/${dateStr}`);
+
+        if (response.ok) {
+            // ★【成功時】日記が見つかった場合
+            const diary = await response.json();
+            
+            // データがあればフォームにセット（更新モード）
+            titleInput.value = diary.title;
+            emotionSelect.value = diary.emotion;
+            contentTextarea.value = diary.content;
+            
+            // 隠しフィールドにはIDを保持（これはまだ使えます）
+            diaryIdInput.value = diary.id;
+            
+            aiCommentDiv.style.display = 'none';
+        } else {
+            // ★【失敗時】日記が見つからなかった場合（ここが修正の核心）
+            
+            // form.reset() をやめて、個別にリセットする
+            titleInput.value = '';
+            contentTextarea.value = '';
+            // emotionSelect はデフォルト（一番上）に戻す
+            emotionSelect.selectedIndex = 0; 
+            
+            // 隠しフィールドのIDは空にする（新規作成モードになる）
+            diaryIdInput.value = '';
+            
+            aiCommentDiv.style.display = 'none';
+
+            // 日付入力欄の値は変更しない！
+        }
+    } catch (error) {
+        console.error('指定日の日記の読み込みに失敗:', error);
+    }
+}
+    
+    // ★トースト表示関数 (汎用化)
+    function showToast(message) {
+        const toastEl = document.getElementById('saveToast');
+        toastEl.querySelector('.toast-body');
+        toastBody.textContent = message; // メッセージをセット
+        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
+        toast.show();
+    }
+
+    // 過去の日記一覧をサーバーから取得して表示する関数
+    async function loadDiaries() {
+        try {
+            const response = await fetch('/api/diaries');
+            if (!response.ok) {
+                console.error('日記一覧の取得に失敗:', response.statusText);
+                return;
             }
-        } catch (error) {
-            console.error('今日の日記の読み込みに失敗:', error);
+            const diaries = await response.json();
+            diaryList.innerHTML = '';
+            diaries.forEach(diary => {
+                const listItem = document.createElement('a');
+                listItem.href = '#';
+                listItem.className = 'list-group-item list-group-item-action';
+                listItem.innerHTML = `<div class="d-flex w-100 justify-content-between"><h5 class="mb-1">${diary.title}</h5><small>${new Date(diary.date).toLocaleDateString()}</small></div><p class="mb-1">${diary.content.substring(0, 50)}...</p>`;
+                listItem.dataset.id = diary.id;
+                listItem.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    showDiaryDetail(listItem.dataset.id);
+                });
+                diaryList.appendChild(listItem);
+            });
+            const calendarEvents = diaries.map(diary => ({
+                id: diary.id,
+                title: `${document.querySelector(`#emotion option[value="${diary.emotion}"]`)?.textContent.split(' ')[0] || '📝'} ${diary.title}`,
+                start: diary.date,
+                allDay: true
+            }));
+            calendar.removeAllEvents();
+            calendar.addEventSource(calendarEvents);
+            bloomFlowersOnCurtains(diaries);
+        } catch(error) {
+            console.error('loadDiariesでエラー:', error);
         }
     }
+
+
+    // 特定のIDの日記詳細を取得して、モーダルで表示する関数
+async function showDiaryDetail(id) {
+    const response = await fetch(`/api/diaries/${id}`);
+    if (!response.ok) {
+        alert('日記の読み込みに失敗しました。');
+        return;
+    }
+    const diary = await response.json();
+    const emotionOption = document.querySelector(`#emotion option[value="${diary.emotion}"]`);
+
+    // モーダルの各要素にデータをセット
+    document.getElementById('diaryDetailModalLabel').textContent = diary.title;
+    document.getElementById('modalDate').textContent = new Date(diary.date).toLocaleString();
+    document.getElementById('modalEmotion').textContent = emotionOption ? emotionOption.textContent : diary.emotion;
+    document.getElementById('modalContent').textContent = diary.content;
+    document.getElementById('modalAiComment').textContent = diary.ai_comment;
+
+    // 1. 削除ボタンの要素を取得
+    const deleteButton = document.getElementById('delete-button');
+
+    // 2. 削除ボタンにクリックイベントを設定
+    //    一度しか実行されないように .onclick を使うか、毎回リスナーを解除するのが安全
+    deleteButton.onclick = async () => {
+        // 確認ダイアログを表示
+        if (confirm('この日記を本当に削除しますか？')) {
+            const deleteResponse = await fetch(`/api/diaries/${diary.id}`, {
+                method: 'DELETE'
+            });
+
+            if (deleteResponse.ok) {
+                // 削除に成功したらモーダルを閉じる
+                const detailModal = bootstrap.Modal.getInstance(document.getElementById('diaryDetailModal'));
+                detailModal.hide();
+
+                // リストとカレンダーを再読み込み
+                loadDiaries();
+                // フォームをリセット（今日の日記を消した場合のため）
+                loadTodaysDiaryIntoForm();
+                // 完了通知を表示
+                showToast('日記を削除しました！');
+            } else {
+                alert('日記の削除に失敗しました。');
+            }
+        }
+    };
+    // --- ★ここまで ---
+
+    // Bootstrapのモーダルを表示
+    const detailModal = new bootstrap.Modal(document.getElementById('diaryDetailModal'));
+    detailModal.show();
+}
 
 // 左右のカーテンにお花を咲かせる関数（五つ葉バージョン）
 function bloomFlowersOnCurtains(diaries) {
@@ -202,122 +326,6 @@ function bloomFlowersOnCurtains(diaries) {
             flower.style.transform = `scale(1) rotate(${rotation}deg)`;
         }, 100 * index);
     });
-}
-    
-    // ★トースト表示関数 (汎用化)
-    function showToast(message) {
-        const toastEl = document.getElementById('saveToast');
-        const toastBody = toastEl.querySelector('.toast-body');
-        toastBody.textContent = message; // メッセージをセット
-        const toast = new bootstrap.Toast(toastEl, { delay: 3000 });
-        toast.show();
-    }
-
-    // 過去の日記一覧をサーバーから取得して表示する関数
-    async function loadDiaries() {
-        const response = await fetch('/api/diaries');
-        const diaries = await response.json();
-        
-        diaryList.innerHTML = ''; // 表示前にリストをクリア
-        
-        diaries.forEach(diary => {
-            const listItem = document.createElement('a'); // 分かりやすいように変数名を変更
-            listItem.href = '#';
-            listItem.className = 'list-group-item list-group-item-action';
-            listItem.innerHTML = `
-                <div class="d-flex w-100 justify-content-between">
-                    <h5 class="mb-1">${diary.title}</h5>
-                    <small>${new Date(diary.date).toLocaleDateString()}</small>
-                </div>
-                <p class="mb-1">${diary.content.substring(0, 50)}...</p>
-            `;
-
-            // --- ここからが修正のポイント ---
-            // データ属性にIDを保存
-            listItem.dataset.id = diary.id;
-    
-            // リストアイテム全体にクリックイベントを設定
-            listItem.addEventListener('click', (event) => {
-                event.preventDefault(); // aタグのデフォルトの画面遷移を無効化
-                showDiaryDetail(listItem.dataset.id); // 保存したIDを使って詳細表示関数を呼び出す
-        });
-        // --- ここまで ---
-
-        bloomFlowersOnCurtains(diaries);
-
-        diaryList.appendChild(listItem);
-    });
-
-        const calendarEvents = diaries.map(diary => {
-            // 感情の絵文字を取得
-            const emotionOption = document.querySelector(`#emotion option[value="${diary.emotion}"]`);
-            const emotionEmoji = emotionOption ? emotionOption.textContent.split(' ')[0] : '📝';
-            
-            return {
-                id: diary.id,
-                title: `${emotionEmoji} ${diary.title}`, // ★diary.title を表示
-                start: diary.date, // 日記の日付
-                allDay: true // 終日のイベントとして表示
-            };
-        });
-        calendar.removeAllEvents(); // 古いイベントをクリア
-        calendar.addEventSource(calendarEvents); // 新しい日記データをカレンダーに追加
-    
-    }
-
-    // [ここからが詳細表示機能の追加部分]
-    // 特定のIDの日記詳細を取得して表示する関数
-    // 特定のIDの日記詳細を取得して、モーダルで表示する関数
-    // 特定のIDの日記詳細を取得して、モーダルで表示する関数
-async function showDiaryDetail(id) {
-    const response = await fetch(`/api/diaries/${id}`);
-    if (!response.ok) {
-        alert('日記の読み込みに失敗しました。');
-        return;
-    }
-    const diary = await response.json();
-    const emotionOption = document.querySelector(`#emotion option[value="${diary.emotion}"]`);
-
-    // モーダルの各要素にデータをセット
-    document.getElementById('diaryDetailModalLabel').textContent = diary.title;
-    document.getElementById('modalDate').textContent = new Date(diary.date).toLocaleString();
-    document.getElementById('modalEmotion').textContent = emotionOption ? emotionOption.textContent : diary.emotion;
-    document.getElementById('modalContent').textContent = diary.content;
-    document.getElementById('modalAiComment').textContent = diary.ai_comment;
-
-    // 1. 削除ボタンの要素を取得
-    const deleteButton = document.getElementById('delete-button');
-
-    // 2. 削除ボタンにクリックイベントを設定
-    //    一度しか実行されないように .onclick を使うか、毎回リスナーを解除するのが安全
-    deleteButton.onclick = async () => {
-        // 確認ダイアログを表示
-        if (confirm('この日記を本当に削除しますか？')) {
-            const deleteResponse = await fetch(`/api/diaries/${diary.id}`, {
-                method: 'DELETE'
-            });
-
-            if (deleteResponse.ok) {
-                // 削除に成功したらモーダルを閉じる
-                const detailModal = bootstrap.Modal.getInstance(document.getElementById('diaryDetailModal'));
-                detailModal.hide();
-
-                // リストとカレンダーを再読み込み
-                loadDiaries();
-                // フォームをリセット（今日の日記を消した場合のため）
-                loadTodaysDiaryIntoForm();
-                // 完了通知を表示
-                showToast('日記を削除しました！');
-            } else {
-                alert('日記の削除に失敗しました。');
-            }
-        }
-    };
-    // --- ★ここまで ---
-
-    // Bootstrapのモーダルを表示
-    const detailModal = new bootstrap.Modal(document.getElementById('diaryDetailModal'));
-    detailModal.show();
 }
 
 

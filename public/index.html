@@ -22,10 +22,10 @@
     <style>
 /* 独自の可愛いスタイル */
 :root {
-    --pastel-pink: #fbc4d4; /* メインカラー */
-    --pastel-cream: #faf5ed; /* サブカラー */
+    --pastel-pink: #fab9cc; /* メインカラー */
+    --pastel-cream: #f7f7f0; /* サブカラー */
     --pastel-mint: #d4e7d4; /* アクセントカラー1 */
-    --pastel-sky: #c6dcf2; /* アクセントカラー2 */
+    --pastel-sky: #bdd8f2; /* アクセントカラー2 */
     --text-color: #6a5a5a; /* 文字色 */
     --font-family-cute: 'M PLUS Rounded 1c', sans-serif; /* 可愛いフォント */
 }
@@ -361,6 +361,11 @@ h1::after {
                     <form id="diary-form">
 			<!-- ★この隠しフィールドを追加 -->
 			<input type="hidden" id="diary-id">
+
+			<div class="mb-3">
+			    <label for="diary-date" class="form-label">日付</label>
+			    <input type="date" id="diary-date" name="diary-date" class="form-control">
+			</div>
 
                         <div class="mb-3">
                             <label for="emotion" class="form-label">今日の気分は？</label>
